@@ -45,4 +45,23 @@ describe('posts', () => {
       created_at: expect.any(String),
     });
   });
+  it('GET /api/v1/posts returns all posts for all Users', async () => {
+    // create a user
+    const [agent, user] = await registerAndLogin();
+    // add a post
+    const testPost = await Post.insert({
+      text: 'This is a post!',
+      user_id: user.id,
+    });
+    const resp = await agent.get('/api/v1/posts');
+    expect(resp.status).toEqual(200);
+    expect(resp.body.length).toEqual(1);
+    expect(resp.body[0].text).toEqual(testPost.text);
+    expect(resp.body[0].user_id).toEqual(testPost.user_id);
+  });
+
+  it('GET /api/v1/items should return a 401 if not authenticated', async () => {
+    const resp = await request(app).get('/api/v1/posts');
+    expect(resp.status).toEqual(401);
+  });
 });
